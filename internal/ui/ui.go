@@ -5,6 +5,7 @@ package ui
 import (
 	"fmt"
 	"os/exec"
+	"runtime"
 	"sort"
 	"strings"
 	"sync"
@@ -84,12 +85,12 @@ type Model struct {
 	chained   bool
 	lastSweep time.Time
 
-	view     viewKind
-	cursor   int
-	mode     int
-	filter   string
+	view        viewKind
+	cursor      int
+	mode        int
+	filter      string
 	filtLanging bool
-	confirm  string // run key awaiting rerun confirmation
+	confirm     string // run key awaiting rerun confirmation
 
 	jobsKey string
 	jobs    []gh.Job
@@ -437,7 +438,6 @@ func (m Model) handleKey(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-
 func (m Model) keyList(s string) (tea.Model, tea.Cmd) {
 	n := len(m.visible())
 	switch s {
@@ -474,7 +474,7 @@ func (m Model) keyList(s string) (tea.Model, tea.Cmd) {
 		return m, fetchJobs(m.c, run.Repo, run.ID, run.Key())
 	case "o":
 		if run, ok := m.selected(); ok {
-			_ = exec.Command("xdg-open", run.HTMLURL).Start()
+			_ = openURL(run.HTMLURL).Start()
 		}
 	case "R":
 		if run, ok := m.selected(); ok && run.Status == "completed" {
@@ -774,7 +774,7 @@ func (m Model) viewList() string {
 		start = m.cursor - rows + 1
 	}
 	if len(v) == 0 {
-		b.WriteString(dimStyle.Render("  no runs yet" + waitHint(m)) + "\n")
+		b.WriteString(dimStyle.Render("  no runs yet"+waitHint(m)) + "\n")
 	}
 	for i := start; i < len(v) && i < start+rows; i++ {
 		r := m.runs[v[i]]
@@ -882,4 +882,12 @@ func stripANSI(s string) string {
 		}
 	}
 	return b.String()
+}
+
+// openURL opens a URL in the default browser: `open` on macOS, `xdg-open` elsewhere.
+func openURL(url string) *exec.Cmd {
+	if runtime.GOOS == "darwin" {
+		return exec.Command("open", url)
+	}
+	return exec.Command("xdg-open", url)
 }
