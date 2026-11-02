@@ -5,10 +5,21 @@ and repository you can reach through `gh`. It answers one question: what is
 deploying right now, and what just broke.
 
     ghtop                          # every org you belong to + your own repos
-    ghtop -orgs ida,ida-cclm       # restrict to some orgs
+    ghtop -orgs acme,acme-web       # restrict to some orgs
     ghtop -interval 60s -max-repos 25
 
 Requires `gh` authenticated (`gh auth status`). ghtop never reads tokens itself.
+
+## Install
+
+macOS (Apple Silicon or Intel) and Linux, through Homebrew:
+
+    brew tap serumax/tap
+    brew install ghtop
+
+Homebrew also installs `gh`, which ghtop uses. Then sign in once:
+
+    gh auth login
 
 ## How it polls
 
